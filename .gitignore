@@ -1,0 +1,16 @@
+.env.production
+.env.staging
+.env.development
+.env
+traefik/.env
+
+.cursor/
+
+backend/tmp
+backend/uploads
+uploads
+
+tsconfig*.tsbuildinfo
+*/node_modules/*
+node_modules/
+.DS_Store

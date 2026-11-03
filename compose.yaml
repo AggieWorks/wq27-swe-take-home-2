@@ -1,0 +1,53 @@
+name: "dibs-containers"
+
+services:
+    db:
+        container_name: dibs-takehome-db
+        image: postgres:16-alpine
+        environment:
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        ports:
+            - 5432:5432
+        restart: always
+        healthcheck:
+            test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    backend:
+        container_name: dibs-takehome-backend
+        build:
+            context: ./backend
+            target: dev
+        environment:
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_HOST=db
+            - POSTGRES_PORT=${POSTGRES_PORT}
+            - POSTGRES_SSLMODE=${POSTGRES_SSLMODE}
+            - APP_ENV=${APP_ENV}
+            - JWT_SECRET=${JWT_SECRET}
+            - GAUTH_CLIENT_ID=${GAUTH_CLIENT_ID}
+            - GAUTH_CLIENT_SECRET=${GAUTH_CLIENT_SECRET}
+            - GAUTH_CLIENT_CALLBACK_URL=${GAUTH_CLIENT_CALLBACK_URL}
+            - FRONTEND_URL=${FRONTEND_URL}
+            - API_PUBLIC_URL=${API_PUBLIC_URL:-http://localhost:8080}
+            - UPLOAD_DIR=/app/uploads
+        ports:
+            - 8080:8080
+        depends_on:
+            db:
+                condition: service_healthy
+        volumes:
+            - ./backend:/app
+            - backend_uploads:/app/uploads
+
+volumes:
+    postgres_data:
+    backend_uploads:
